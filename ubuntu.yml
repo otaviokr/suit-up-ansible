@@ -1,0 +1,9 @@
+---
+
+- hosts: all
+  remote_user: otaviokr
+  become: yes
+  roles:
+    - ubuntu
+  vars_files:
+    - "roles/ubuntu/vars/ubuntu.yml"

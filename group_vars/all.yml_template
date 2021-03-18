@@ -1,0 +1,12 @@
+---
+
+# Golang Version to be installed.
+golang_version: 1.16.2
+
+# User account to be created - used for installation.
+username: "Test User"
+login: testuser
+password: 'valid_hashed_password'
+
+# Timezone configuration.
+timezone: Europe/Zurich

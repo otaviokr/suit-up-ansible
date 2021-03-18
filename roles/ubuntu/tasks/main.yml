@@ -1,0 +1,253 @@
+---
+
+- name: Update all packages to their latest version
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+
+- name: installing gpg to add GPG key for docker
+  apt:
+    pkg:
+    - gpg
+
+- name: Uninstalling old versions of docker
+  apt:
+    state: absent
+    pkg:
+    - docker
+    - docker-engine
+    - docker.io
+    - containerd
+    - runc
+
+- name: add GPG key for docker
+  apt_key:
+    url: https://download.docker.com/linux/{{ distro_name }}/gpg
+    state: present
+
+- name: Add docker repository to apt
+  apt_repository:
+    repo: deb https://download.docker.com/linux/{{ distro_name }} {{ distro_release }} {{ docker_branch }}
+    state: present
+
+- name: Add Virtualbox keys
+  apt_key:
+    url: https://www.virtualbox.org/download/{{ item }}
+    state: present
+  with_items:
+    - oracle_vbox_2016.asc
+    - oracle_vbox.asc
+
+- name: Add Virtualbox repository to apt
+  apt_repository:
+    repo: deb [arch={{ distro_arch }}] http://download.virtualbox.org/virtualbox/debian {{ distro_release }} {{ virtualbox_branch }}
+    state: present
+
+- name: Install packages
+  apt:
+    pkg:
+    - ansible
+    - apt-transport-https
+    - automake
+    - awesome-extra
+    - awesome
+    - cmake
+    - cmatrix
+    - compton
+    - containerd.io
+    - curl
+    - dash
+    - diffutils
+    - docker-ce
+    - docker-ce-cli
+    - dmeventd
+    - ffmpeg
+    - findutils
+    - fonts-indic
+    - fonts-powerline
+    - gettext
+    - git
+    - gnupg-agent
+    - gparted
+    - grep
+    - gzip
+    - hostname
+    - hunspell-en-us
+    - init
+    - keyboard-configuration
+    - libaio1
+    - libdevmapper-event1.02.1
+    - libegl1-mesa-dev
+    - libfontconfig1-dev
+    - libfreetype6-dev
+    - libtool
+    - libtool-bin
+    - libxcb-xfixes0-dev
+    - locales
+    - lvm2
+    - mokutil
+    - ncurses-base
+    - ncurses-bin
+    - ncurses-term
+    - neofetch
+    - neovim
+    - nitrogen
+    - openssh-server
+    - os-prober
+    - pciutils
+    - pcmanfm
+    - pkg-config
+    - python-apt
+    - python3
+    - python3-pip
+    - software-properties-common
+    - sshpass
+    - suckless-tools
+    - udev
+    - uim
+    - usbutils
+    - vagrant
+    - virtualbox-6.1
+    - wamerican
+    - wbritish
+    - wget
+    - xauth
+    - xfsprogs
+    - zsh
+
+- name: Download Virtualbox Extension Pack
+  get_url:
+    url: https://download.virtualbox.org/virtualbox/{{ virtualbox_version }}/Oracle_VM_VirtualBox_Extension_Pack-{{ virtualbox_version }}.vbox-extpack
+    dest: /tmp/Oracle_VM_VirtualBox_Extension_Pack-{{ virtualbox_version }}.vbox-extpack
+
+  # You need to run this manually, because you need to press Y and Enter to confirm...
+    #- name: Install Virtualbox Extension Pack
+  #  shell: VBoxManage extpack install Oracle_VM_VirtualBox_Extension_Pack-6.1.8.vbox-extpack
+  #  become: yes
+  #  become_user: root
+
+- name: check if docker is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Installing bpytop via pip3
+  shell: pip3 install -v bpytop --upgrade
+
+- name: Uninstalling (possibly) older Golang version
+  file:
+    path: /usr/local/go
+    state: absent
+
+- name: Installing new Golang version - 01. Get installation file
+  get_url:
+    url: https://golang.org/dl/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz
+    dest: /tmp/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz
+
+- name: Installing new Golang version - 02. Untaring file
+  shell: tar zxfv /tmp/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz -C /usr/local && rm -fv /tmp/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz
+
+- name: Creating user {{ login }}
+  user:
+    name: "{{ login }}"
+    comment: "{{ username }}"
+    # encrypted password: echo "yoursecretpassword" | openssl passwd -1 -stdin
+    password: '{{ password }}'
+    shell: /bin/zsh
+    append: yes
+    groups:
+      - docker
+      - sudo
+
+- name: Create hidden folder .fonts
+  file:
+    path: /home/{{ login }}//.fonts
+    state: directory
+
+- name: Downloading MesloLGS fonts
+  get_url:
+    url: https://github.com/romkatv/powerlevel10k-media/raw/master/{{ item }}
+    dest: /home/{{ login }}/.fonts/{{ item }}
+  with_items:
+          - "MesloLGS%20NF%20Regular.ttf"
+          - "MesloLGS%20NF%20Bold.ttf"
+          - "MesloLGS%20NF%20Italic.ttf"
+          - "MesloLGS%20NF%20Bold%20Italic.ttf"
+
+- name: Refreshing font cache to get new downloaded fonts
+  shell: fc-cache -rv
+  become: yes
+  become_user: "{{ login }}"
+
+- name: Uninstalling (possibly) older Oh-My-ZSH version and its themes
+  file:
+    path: /home/{{ login }}/.oh-my-zsh
+    state: absent
+
+- name: Installing Oh-My-ZSH
+  shell: curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh
+  become: yes
+  become_user: "{{ login }}"
+
+- name: cloning neovim repo for installation
+  git:
+    repo: https://github.com/neovim/neovim.git
+    dest: /tmp/neovim
+  become: yes
+  become_user: '{{ login }}'
+
+- name: building neovim from source
+  shell: cd /tmp/neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo
+  become: yes
+  become_user: '{{ login }}'
+
+- name: installing neovim from source
+  shell: cd /tmp/neovim && make install
+
+- name: Installing Powerline 10k (Oh-My-ZSH theme)
+  git:
+    depth: 1
+    repo: 'https://github.com/romkatv/powerlevel10k.git'
+    dest: /home/{{ login }}/.oh-my-zsh/themes/powerlevel10k
+  become: yes
+  become_user: "{{ login }}"
+
+- name: Installing Vundle - Vi's packet manager
+  git:
+    repo: 'https://github.com/VundleVim/Vundle.vim.git'
+    dest: /home/{{ login }}/.vim/bundle/Vundle.vim
+  become: yes
+  become_user: "{{ login }}"
+
+- name: Copying nvim config file
+  copy:
+    src: files/user/init.vim
+    dest: /home/{{ login }}/.config/nvim/
+    owner: "{{ login }}"
+    group: "{{ login }}"
+    mode: '0644'
+
+- name: Copying home hidden files
+  ansible.builtin.copy:
+    src: "files/user/{{ item }}"
+    dest: "/home/{{ login }}/.{{ item }}"
+    owner: "{{ login }}"
+    group: "{{ login }}"
+    mode: '0644'
+  loop:
+    - zshrc
+    - p10k.zsh
+
+- name: Installing node_exporter for Prometheus 1 of 3
+  shell: curl -s https://api.github.com/repos/prometheus/node_exporter/releases/latest | grep browser_download_url | grep linux-{{ distro_arch }} | cut -d '"' -f 4 | wget -qi -
+  become: yes
+  become_user: root
+
+- name: Enabling docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+

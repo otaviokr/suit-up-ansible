@@ -1,0 +1,6 @@
+files/user/gitconfig
+
+group_vars/all.yml
+
+roles/raspberrypios/vars/raspberrypios.yml
+roles/ubuntu/vars/ubuntu.yml
