@@ -1,0 +1,25 @@
+---
+
+#- name: Add docker repository to apt
+distro_name: ubuntu
+distro_release: focal
+distro_arch: amd64
+
+docker_branch: stable
+
+#- name: Download Virtualbox Extension Pack
+virtualbox_version: 6.1.8
+virtualbox_branch: contrib
+
+#- name: Installing new Golang version - 01. Get installation file
+#- name: Installing new Golang version - 02. Untaring file
+golang_version: 1.16.2
+
+#- name: Creating user
+username: "A New User"
+login: usertest
+# Use this command to generate the hashed password and paste it below:
+#   openssl passwd -1 'some_plain_pass'
+password:
+
+timezone: Europe/Zurich
