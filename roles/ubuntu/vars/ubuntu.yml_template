@@ -17,6 +17,7 @@ golang_version: 1.16.2
 
 #- name: Creating user
 username: "A New User"
+email: usertest@email.com
 login: usertest
 # Use this command to generate the hashed password and paste it below:
 #   openssl passwd -1 'some_plain_pass'

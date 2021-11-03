@@ -1,5 +1,8 @@
 ---
 
+# BTop Version to be installed.
+btop_version: 1.0.21
+
 # Golang Version to be installed.
 golang_version: 1.16.2
 

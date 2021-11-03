@@ -6,43 +6,9 @@
     state: latest
     update_cache: yes
 
-- name: installing gpg to add GPG key for docker
-  apt:
-    pkg:
-    - gpg
-
-- name: Uninstalling old versions of docker
-  apt:
-    state: absent
-    pkg:
-    - docker
-    - docker-engine
-    - docker.io
-    - containerd
-    - runc
-
-- name: add GPG key for docker
-  apt_key:
-    url: https://download.docker.com/linux/{{ distro_name }}/gpg
-    state: present
-
-- name: Add docker repository to apt
+- name: Add ansible repo
   apt_repository:
-    repo: deb https://download.docker.com/linux/{{ distro_name }} {{ distro_release }} {{ docker_branch }}
-    state: present
-
-- name: Add Virtualbox keys
-  apt_key:
-    url: https://www.virtualbox.org/download/{{ item }}
-    state: present
-  with_items:
-    - oracle_vbox_2016.asc
-    - oracle_vbox.asc
-
-- name: Add Virtualbox repository to apt
-  apt_repository:
-    repo: deb [arch={{ distro_arch }}] http://download.virtualbox.org/virtualbox/debian {{ distro_release }} {{ virtualbox_branch }}
-    state: present
+    repo: ppa:ansible/ansible
 
 - name: Install packages
   apt:
@@ -54,21 +20,13 @@
     - awesome
     - cmake
     - cmatrix
-    - compton
-    - containerd.io
     - curl
-    - dash
-    - diffutils
-    - docker-ce
-    - docker-ce-cli
-    - dmeventd
     - ffmpeg
     - findutils
     - fonts-indic
     - fonts-powerline
     - gettext
     - git
-    - gnupg-agent
     - gparted
     - grep
     - gzip
@@ -96,30 +54,34 @@
     - openssh-server
     - os-prober
     - pciutils
-    - pcmanfm
     - pkg-config
-    - python-apt
+    - podman
+    - python3-apt
     - python3
     - python3-pip
     - software-properties-common
     - sshpass
-    - suckless-tools
-    - udev
     - uim
     - usbutils
     - vagrant
-    - virtualbox-6.1
     - wamerican
     - wbritish
     - wget
     - xauth
-    - xfsprogs
     - zsh
 
-- name: Download Virtualbox Extension Pack
-  get_url:
-    url: https://download.virtualbox.org/virtualbox/{{ virtualbox_version }}/Oracle_VM_VirtualBox_Extension_Pack-{{ virtualbox_version }}.vbox-extpack
-    dest: /tmp/Oracle_VM_VirtualBox_Extension_Pack-{{ virtualbox_version }}.vbox-extpack
+- name: Configure username in git
+  become_user: "{{ login }}"
+  shell: git config --global user.name "{{ username }}"
+
+- name: Configure email in git
+  become_user: "{{ login }}"
+  shell: git config --global user.email "{{ email }}"
+
+# - name: Download Virtualbox Extension Pack
+#   get_url:
+#     url: https://download.virtualbox.org/virtualbox/{{ virtualbox_version }}/Oracle_VM_VirtualBox_Extension_Pack-{{ virtualbox_version }}.vbox-extpack
+#     dest: /tmp/Oracle_VM_VirtualBox_Extension_Pack-{{ virtualbox_version }}.vbox-extpack
 
   # You need to run this manually, because you need to press Y and Enter to confirm...
     #- name: Install Virtualbox Extension Pack
@@ -127,14 +89,28 @@
   #  become: yes
   #  become_user: root
 
-- name: check if docker is running
-  service:
-    name: docker
-    state: started
-    enabled: yes
+- name: Downloading btop++
+  get_url:
+    url: https://github.com/aristocratos/btop/releases/download/v{{ btop_version }}/btop-{{ btop_version }}-x86_64-linux-musl.tbz
+    dest: /tmp/
 
-- name: Installing bpytop via pip3
-  shell: pip3 install -v bpytop --upgrade
+- name: Compiling btop++ (creating temp folder)
+  file:
+    path: /tmp/btop
+    state: directory
+
+- name: Compiling btop++ (installing)
+  become: yes
+  shell: cd /tmp/btop && bunzip2 ../btop-{{ btop_version }}-x86_64-linux-musl.tbz && tar xf ../btop-{{ btop_version }}-x86_64-linux-musl.tar && make install && make setuid
+
+- name: Compiling btop++ (deleting temp folder and files)
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /tmp/btop
+    - /tmp/btop-{{ btop_version }}-x86_64-linux-musl.tbz
+    - /tmp/btop-{{ btop_version }}-x86_64-linux-musl.tar
 
 - name: Uninstalling (possibly) older Golang version
   file:
@@ -149,17 +125,17 @@
 - name: Installing new Golang version - 02. Untaring file
   shell: tar zxfv /tmp/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz -C /usr/local && rm -fv /tmp/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz
 
-- name: Creating user {{ login }}
-  user:
-    name: "{{ login }}"
-    comment: "{{ username }}"
-    # encrypted password: echo "yoursecretpassword" | openssl passwd -1 -stdin
-    password: '{{ password }}'
-    shell: /bin/zsh
-    append: yes
-    groups:
-      - docker
-      - sudo
+# - name: Creating user {{ login }}
+#   user:
+#     name: "{{ login }}"
+#     comment: "{{ username }}"
+#     # encrypted password: echo "yoursecretpassword" | openssl passwd -1 -stdin
+#     password: '{{ password }}'
+#     shell: /bin/zsh
+#     append: yes
+#     groups:
+#       - docker
+#       - sudo
 
 - name: Create hidden folder .fonts
   file:
@@ -239,15 +215,3 @@
   loop:
     - zshrc
     - p10k.zsh
-
-- name: Installing node_exporter for Prometheus 1 of 3
-  shell: curl -s https://api.github.com/repos/prometheus/node_exporter/releases/latest | grep browser_download_url | grep linux-{{ distro_arch }} | cut -d '"' -f 4 | wget -qi -
-  become: yes
-  become_user: root
-
-- name: Enabling docker service
-  systemd:
-    name: docker
-    state: started
-    enabled: yes
-
