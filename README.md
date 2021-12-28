@@ -16,8 +16,13 @@ This computer needs to have network access to the target computer.
 
 You need to have root access to the target computer (shared SSH keys or the root password)
 
-Create the configuration files in group_vars:
-- TODO
+Create the configuration files in group_vars (use the template file as starting point):
+- btop_version: get the latest (or desired) version of btop at its (Github repo)[https://github.com/aristocratos/btop]
+- golang_version: get the latest (or desired) version of Go at its (official download page)[https://go.dev/dl/]
+- username: this is the name of the user, not its login!
+- login: this is the user login.
+- password: this is the password (use a valid hash!)
+- timezone: for example, "Europe/Berlin"
 
 Run the following command:
 
@@ -31,7 +36,7 @@ where
 
 ## Not sure if this is what you want?
 
-Try it in a virtual machine! I recommend installing Virtualbox, then create a VM with Ubuntu x64, configure network access, install the SSH server (`sudo apt install openssh-server`) and try to run the script.
+Try it in a virtual machine! I recommend first installing Virtualbox, then create a VM with Ubuntu x64, configure network access, install the SSH server (`sudo apt install openssh-server`) and try to run the script.
 
 ## Two scenarios
 

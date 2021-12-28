@@ -78,6 +78,21 @@
   become_user: "{{ login }}"
   shell: git config --global user.email "{{ email }}"
 
+- name: Add Virtual Box repo
+  become: yes
+  lineinfile:
+    path: /etc/apt/sources.list
+    regexp: 'virtualbox'
+    line: "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian {{ distro_release }} contrib"
+
+- name: Add Virtual Box repo key
+  become: yes
+  shell: wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+
+- name: Install Virtual Box
+  become: yes
+  shell: apt update && apt install virtualbox-6.1 -y
+
 # - name: Download Virtualbox Extension Pack
 #   get_url:
 #     url: https://download.virtualbox.org/virtualbox/{{ virtualbox_version }}/Oracle_VM_VirtualBox_Extension_Pack-{{ virtualbox_version }}.vbox-extpack
@@ -91,7 +106,7 @@
 
 - name: Downloading btop++
   get_url:
-    url: https://github.com/aristocratos/btop/releases/download/v{{ btop_version }}/btop-{{ btop_version }}-x86_64-linux-musl.tbz
+    url: https://github.com/aristocratos/btop/releases/download/v{{ btop_version }}/btop-x86_64-linux-musl.tbz
     dest: /tmp/
 
 - name: Compiling btop++ (creating temp folder)
@@ -101,7 +116,7 @@
 
 - name: Compiling btop++ (installing)
   become: yes
-  shell: cd /tmp/btop && bunzip2 ../btop-{{ btop_version }}-x86_64-linux-musl.tbz && tar xf ../btop-{{ btop_version }}-x86_64-linux-musl.tar && make install && make setuid
+  shell: cd /tmp/btop && bunzip2 ../btop-x86_64-linux-musl.tbz && tar xf ../btop-x86_64-linux-musl.tar && make install && make setuid
 
 - name: Compiling btop++ (deleting temp folder and files)
   file:
@@ -109,8 +124,8 @@
     state: absent
   with_items:
     - /tmp/btop
-    - /tmp/btop-{{ btop_version }}-x86_64-linux-musl.tbz
-    - /tmp/btop-{{ btop_version }}-x86_64-linux-musl.tar
+    - /tmp/btop-x86_64-linux-musl.tbz
+    - /tmp/btop-x86_64-linux-musl.tar
 
 - name: Uninstalling (possibly) older Golang version
   file:
