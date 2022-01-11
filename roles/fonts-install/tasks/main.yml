@@ -1,0 +1,43 @@
+---
+
+- name: Create hidden folder .fonts
+  file:
+    path: /home/{{ item }}//.fonts
+    state: directory
+  with_items:
+    - "{{ users.keys() }}"
+
+- name: Downloading MesloLGS fonts - Regular
+  get_url:
+    url: https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf
+    dest: /home/{{ item }}/.fonts/MesloLGS%20NF%20Regular.ttf
+  with_items:
+    - "{{ users.keys() }}"
+
+- name: Downloading MesloLGS fonts - Bold
+  get_url:
+    url: https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf
+    dest: /home/{{ item }}/.fonts/MesloLGS%20NF%20Bold.ttf
+  with_items:
+    - "{{ users.keys() }}"
+
+- name: Downloading MesloLGS fonts - Italic
+  get_url:
+    url: https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf
+    dest: /home/{{ item }}/.fonts/MesloLGS%20NF%20Italic.ttf
+  with_items:
+    - "{{ users.keys() }}"
+
+- name: Downloading MesloLGS fonts - Bold Italic
+  get_url:
+    url: https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf
+    dest: /home/{{ item }}/.fonts/MesloLGS%20NF%20Bold%20Italic.ttf
+  with_items:
+    - "{{ users.keys() }}"
+
+- name: Refreshing font cache to get new downloaded fonts
+  shell: fc-cache -rv
+  become: yes
+  become_user: "{{ item }}"
+  with_items:
+    - "{{ users.keys() }}"

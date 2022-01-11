@@ -1,0 +1,36 @@
+---
+
+- name: Install git
+  apt:
+    pkg:
+      - git
+
+- name: Create directory for ansible custom facts
+  file:
+    state: directory
+    recurse: yes
+    path: /etc/ansible/facts.d
+
+- name: Install custom git fact
+  template:
+    src: git.fact
+    mode: "0755"
+    dest: /etc/ansible/facts.d
+
+- name: Re-read facts after adding custom fact
+  setup:
+    filter: ansible_local
+
+- name: Configure username in git
+  become_user: "{{ item }}"
+  shell: git config --global user.name "{{ logins[item].username }}"
+  with_items:
+    - "{{ logins.keys() }}"
+  when: "ansible_local['git']['users'][item].name != logins[item].username"
+
+- name: Configure email in git
+  become_user: "{{ item }}"
+  shell: git config --global user.email "{{ logins[item].email }}"
+  with_items:
+    - "{{ logins.keys() }}"
+  when: "ansible_local['git']['users'][item].email != logins[item].email"

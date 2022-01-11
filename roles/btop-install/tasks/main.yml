@@ -1,0 +1,35 @@
+---
+
+- name: Checking existing btop version, if  any
+  shell: "if [ ! -f $(which btop) ]; then echo ''; else btop -v | cut -d' ' -f3; fi"
+  register: btop_v
+
+- name: Current version of btop++ (before installing)
+  debug:
+    var: btop_v.stdout
+
+- name: Downloading btop++
+  get_url:
+    url: https://github.com/aristocratos/btop/releases/download/v{{ btop_version }}/btop-x86_64-linux-musl.tbz
+    dest: /tmp/
+  when: "btop_v.stdout != btop_version"
+
+- name: Creating temp folder
+  file:
+    path: /tmp/btop
+    state: directory
+  when: "btop_v.stdout != btop_version"
+
+- name: Installing
+  become: yes
+  shell: cd /tmp/btop && bunzip2 ../btop-x86_64-linux-musl.tbz && tar xf ../btop-x86_64-linux-musl.tar && make install && make setuid
+  when: "btop_v.stdout != btop_version"
+
+- name: deleting temp folder and files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /tmp/btop
+    - /tmp/btop-x86_64-linux-musl.tbz
+    - /tmp/btop-x86_64-linux-musl.tar

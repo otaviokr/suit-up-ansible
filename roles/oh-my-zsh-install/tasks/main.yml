@@ -1,0 +1,50 @@
+---
+
+- name: Check if Oh-My-ZSH is installed
+  stat:
+    path: "/home/{{ item }}/.oh-my-zsh"
+  register: omz_stat
+  with_items:
+    - "{{ users.keys() }}"
+
+# - name: Details about Oh-My-ZSH
+#   debug:
+#     var: omz_stat
+
+- name: Installing Oh-My-ZSH, if not yet
+  shell: "curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh"
+  become: yes
+  become_user: "{{ item.item }}"
+  with_items:
+    - "{{ omz_stat.results }}"
+  when: "item.stat.exists != true"
+
+- name: Installing Powerline 10k (Oh-My-ZSH theme)
+  git:
+    depth: 1
+    repo: 'https://github.com/romkatv/powerlevel10k.git'
+    dest: /home/{{ item }}/.oh-my-zsh/themes/powerlevel10k
+  become: yes
+  become_user: "{{ item }}"
+  with_items:
+    - "{{ users.keys() }}"
+
+- name: Copying home hidden files - .zshrc
+  ansible.builtin.copy:
+    src: "files/user/zshrc"
+    dest: "/home/{{ item }}/.zshrc"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: '0644'
+  with_items:
+    - "{{ users.keys() }}"
+
+- name: Copying home hidden files - .p10k.zsh
+  ansible.builtin.copy:
+    src: "files/user/p10k.zsh"
+    dest: "/home/{{ item }}/.p10k.zsh"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: '0644'
+  with_items:
+    - "{{ users.keys() }}"

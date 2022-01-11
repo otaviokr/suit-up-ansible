@@ -12,133 +12,25 @@
 
 - name: Install packages
   apt:
-    pkg:
-    - ansible
-    - apt-transport-https
-    - automake
-    - awesome-extra
-    - awesome
-    - cmake
-    - cmatrix
-    - curl
-    - ffmpeg
-    - findutils
-    - fonts-indic
-    - fonts-powerline
-    - gettext
-    - git
-    - gparted
-    - grep
-    - gzip
-    - hostname
-    - hunspell-en-us
-    - init
-    - keyboard-configuration
-    - libaio1
-    - libdevmapper-event1.02.1
-    - libegl1-mesa-dev
-    - libfontconfig1-dev
-    - libfreetype6-dev
-    - libtool
-    - libtool-bin
-    - libxcb-xfixes0-dev
-    - locales
-    - lvm2
-    - mokutil
-    - ncurses-base
-    - ncurses-bin
-    - ncurses-term
-    - neofetch
-    - neovim
-    - nitrogen
-    - openssh-server
-    - os-prober
-    - pciutils
-    - pkg-config
-    - podman
-    - python3-apt
-    - python3
-    - python3-pip
-    - software-properties-common
-    - sshpass
-    - uim
-    - usbutils
-    - vagrant
-    - wamerican
-    - wbritish
-    - wget
-    - xauth
-    - zsh
+    name: "{{ applications }}"
 
-- name: Configure username in git
-  become_user: "{{ login }}"
-  shell: git config --global user.name "{{ username }}"
+- name: Install git
+  include_role:
+    name: git-install
+  vars:
+    logins: "{{ users }}"
 
-- name: Configure email in git
-  become_user: "{{ login }}"
-  shell: git config --global user.email "{{ email }}"
+- name: Install virtualbox
+  include_role:
+    name: virtualbox-install
 
-- name: Add Virtual Box repo
-  become: yes
-  lineinfile:
-    path: /etc/apt/sources.list
-    regexp: 'virtualbox'
-    line: "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian {{ distro_release }} contrib"
+- name: Install btop
+  include_role:
+    name: btop-install
 
-- name: Add Virtual Box repo key
-  become: yes
-  shell: wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
-
-- name: Install Virtual Box
-  become: yes
-  shell: apt update && apt install virtualbox-6.1 -y
-
-# - name: Download Virtualbox Extension Pack
-#   get_url:
-#     url: https://download.virtualbox.org/virtualbox/{{ virtualbox_version }}/Oracle_VM_VirtualBox_Extension_Pack-{{ virtualbox_version }}.vbox-extpack
-#     dest: /tmp/Oracle_VM_VirtualBox_Extension_Pack-{{ virtualbox_version }}.vbox-extpack
-
-  # You need to run this manually, because you need to press Y and Enter to confirm...
-    #- name: Install Virtualbox Extension Pack
-  #  shell: VBoxManage extpack install Oracle_VM_VirtualBox_Extension_Pack-6.1.8.vbox-extpack
-  #  become: yes
-  #  become_user: root
-
-- name: Downloading btop++
-  get_url:
-    url: https://github.com/aristocratos/btop/releases/download/v{{ btop_version }}/btop-x86_64-linux-musl.tbz
-    dest: /tmp/
-
-- name: Compiling btop++ (creating temp folder)
-  file:
-    path: /tmp/btop
-    state: directory
-
-- name: Compiling btop++ (installing)
-  become: yes
-  shell: cd /tmp/btop && bunzip2 ../btop-x86_64-linux-musl.tbz && tar xf ../btop-x86_64-linux-musl.tar && make install && make setuid
-
-- name: Compiling btop++ (deleting temp folder and files)
-  file:
-    path: "{{ item }}"
-    state: absent
-  with_items:
-    - /tmp/btop
-    - /tmp/btop-x86_64-linux-musl.tbz
-    - /tmp/btop-x86_64-linux-musl.tar
-
-- name: Uninstalling (possibly) older Golang version
-  file:
-    path: /usr/local/go
-    state: absent
-
-- name: Installing new Golang version - 01. Get installation file
-  get_url:
-    url: https://golang.org/dl/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz
-    dest: /tmp/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz
-
-- name: Installing new Golang version - 02. Untaring file
-  shell: tar zxfv /tmp/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz -C /usr/local && rm -fv /tmp/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz
+- name: Install Golang
+  include_role:
+    name: golang-install
 
 # - name: Creating user {{ login }}
 #   user:
@@ -152,81 +44,14 @@
 #       - docker
 #       - sudo
 
-- name: Create hidden folder .fonts
-  file:
-    path: /home/{{ login }}//.fonts
-    state: directory
+- name: Install fonts
+  include_role:
+    name: fonts-install
 
-- name: Downloading MesloLGS fonts
-  get_url:
-    url: https://github.com/romkatv/powerlevel10k-media/raw/master/{{ item }}
-    dest: /home/{{ login }}/.fonts/{{ item }}
-  with_items:
-          - "MesloLGS%20NF%20Regular.ttf"
-          - "MesloLGS%20NF%20Bold.ttf"
-          - "MesloLGS%20NF%20Italic.ttf"
-          - "MesloLGS%20NF%20Bold%20Italic.ttf"
+- name: Install Oh-My-ZSH
+  include_role:
+    name: oh-my-zsh-install
 
-- name: Refreshing font cache to get new downloaded fonts
-  shell: fc-cache -rv
-  become: yes
-  become_user: "{{ login }}"
-
-- name: Uninstalling (possibly) older Oh-My-ZSH version and its themes
-  file:
-    path: /home/{{ login }}/.oh-my-zsh
-    state: absent
-
-- name: Installing Oh-My-ZSH
-  shell: curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh
-  become: yes
-  become_user: "{{ login }}"
-
-- name: cloning neovim repo for installation
-  git:
-    repo: https://github.com/neovim/neovim.git
-    dest: /tmp/neovim
-  become: yes
-  become_user: '{{ login }}'
-
-- name: building neovim from source
-  shell: cd /tmp/neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo
-  become: yes
-  become_user: '{{ login }}'
-
-- name: installing neovim from source
-  shell: cd /tmp/neovim && make install
-
-- name: Installing Powerline 10k (Oh-My-ZSH theme)
-  git:
-    depth: 1
-    repo: 'https://github.com/romkatv/powerlevel10k.git'
-    dest: /home/{{ login }}/.oh-my-zsh/themes/powerlevel10k
-  become: yes
-  become_user: "{{ login }}"
-
-- name: Installing Vundle - Vi's packet manager
-  git:
-    repo: 'https://github.com/VundleVim/Vundle.vim.git'
-    dest: /home/{{ login }}/.vim/bundle/Vundle.vim
-  become: yes
-  become_user: "{{ login }}"
-
-- name: Copying nvim config file
-  copy:
-    src: files/user/init.vim
-    dest: /home/{{ login }}/.config/nvim/
-    owner: "{{ login }}"
-    group: "{{ login }}"
-    mode: '0644'
-
-- name: Copying home hidden files
-  ansible.builtin.copy:
-    src: "files/user/{{ item }}"
-    dest: "/home/{{ login }}/.{{ item }}"
-    owner: "{{ login }}"
-    group: "{{ login }}"
-    mode: '0644'
-  loop:
-    - zshrc
-    - p10k.zsh
+- name: Install neovim
+  include_role:
+    name: neovim-install

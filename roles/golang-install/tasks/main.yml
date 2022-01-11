@@ -1,0 +1,30 @@
+---
+
+- name: Checking current version installed, if any
+  shell: "if [ ! -d '/usr/local/go' ]; then echo ''; else /usr/local/go/bin/go version | cut -d'o' -f4 | cut -d' ' -f 1; fi"
+  register: current_v
+
+- name: Current version of golang (before installing)
+  debug:
+    var: current_v.stdout
+
+- name: Uninstalling (possibly) older Golang version
+  file:
+    path: /usr/local/go
+    state: absent
+  when: "current_v.stdout != golang_version"
+
+- name: Get installation file
+  get_url:
+    url: https://golang.org/dl/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz
+    dest: /tmp/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz
+  when: "current_v.stdout != golang_version"
+
+- name: Untaring file
+  shell: tar zxfv /tmp/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz -C /usr/local
+  when: "current_v.stdout != golang_version"
+
+- name: Deleting unnecessary files
+  file:
+    path: "/tmp/go{{ golang_version }}.linux-{{ distro_arch }}.tar.gz"
+    state: absent

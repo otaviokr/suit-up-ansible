@@ -1,0 +1,61 @@
+---
+
+- name: Checking latest neovim version available
+  shell: curl -q https://github.com/neovim/neovim/releases/latest | cut -d'/' -f8 | cut -d'"' -f1
+  register: neovim_v_remote
+
+- name: Checking current version of neovim installed, if any
+  shell: "if [ ! -f $(which nvim) ]; then echo ''; else nvim -v | head -n1 | cut -d' ' -f2; fi"
+  register: neovim_v_local
+
+- name: debug neovim_v_remote
+  debug:
+    var: neovim_v_remote.stdout
+
+- name: debug neovim_v_local
+  debug:
+    var: neovim_v_local.stdout
+
+- name: Create temp folder /tmp/neovim
+  file:
+    path: /tmp/neovim
+    state: directory
+  when: "neovim_v_remote.stdout | length > 0 and neovim_v_remote.stdout != neovim_v_local.stdout"
+
+- name: Get neovim source files
+  get_url:
+    url: https://github.com/neovim/neovim/archive/refs/tags/{{ neovim_v_remote.stdout }}.tar.gz
+    dest: /tmp/neovim/neovim_{{ neovim_v_remote.stdout }}.tar.gz
+  when: "neovim_v_remote.stdout | length > 0 and neovim_v_remote.stdout != neovim_v_local.stdout"
+
+- name: Building neovim from source
+  shell: cd /tmp/neovim && tar zxfv neovim_{{ neovim_v_remote.stdout }}.tar.gz && cd neovim-* && make CMAKE_BUILD_TYPE=RelWithDebInfo && make install
+  when: "neovim_v_remote.stdout | length > 0 and neovim_v_remote.stdout != neovim_v_local.stdout"
+
+# - name: Installing neovim from source
+#   shell: cd /tmp/neovim && make install
+#   when: "neovim_v_remote.stdout != neovim_v_local.stdout"
+
+- name: Deleting temp folder /tmp/neovim
+  file:
+    path: /tmp/neovim
+    state: absent
+
+- name: Copying nvim config file
+  copy:
+    src: files/user/init.vim
+    dest: /home/{{ item }}/.config/nvim/
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: '0644'
+  with_items:
+    - "{{ users.keys() }}"
+
+- name: Installing Vundle - Vi's packet manager
+  git:
+    repo: 'https://github.com/VundleVim/Vundle.vim.git'
+    dest: /home/{{ item }}/.vim/bundle/Vundle.vim
+  become: yes
+  become_user: "{{ item }}"
+  with_items:
+    - "{{ users.keys() }}"

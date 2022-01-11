@@ -1,0 +1,18 @@
+#!/bin/bash
+
+logins=( {{ logins.keys() | join(' ') }} )
+i=1
+echo -n "{"
+echo -ne "\"users\": {"
+for l in ${logins[@]}; do
+    echo -ne "\"${l}\": {"
+    echo -ne "\"name\": \"$(git config -f /home/${l}/.gitconfig --get user.name)\","
+    echo -ne "\"email\": \"$(git config -f /home/${l}/.gitconfig --get user.email)\""
+    echo -ne "}"
+    if [ "${i}" -lt "{{ logins | length }}" ]; then
+        echo -n ","
+    fi
+    i=$((i+1))
+done
+echo -ne "}"
+echo "}"
