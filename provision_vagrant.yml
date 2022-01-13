@@ -1,0 +1,31 @@
+---
+- name: Provision all VM
+  hosts: ansible-box
+  tasks:
+    - name: Create keygen and adding user to group sudo
+      become: yes
+      user:
+        name: vagrant
+        groups: sudo
+        append: yes
+        generate_ssh_key: yes
+
+    - name: Update all packages to their latest version
+      become: yes
+      apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+
+    - name: Add ansible repo
+      become: yes
+      apt_repository:
+        repo: ppa:ansible/ansible
+
+    - name: Install git and ansible
+      become: yes
+      apt:
+        name:
+          - ansible
+          - git
+        state: present
