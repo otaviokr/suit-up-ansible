@@ -1,0 +1,17 @@
+---
+
+- name: Creating user
+  user:
+    name: "{{ item }}"
+    comment: "{{ users[item].username }}"
+    # encrypted password: echo "yoursecretpassword" | openssl passwd -1 -stdin
+    # password: '{{ secret_new-users_password }}'
+    password: "$1$UA/d4s4T$TBCGT5FLJYSFVAYwutwgw0"
+    shell: /bin/zsh
+    generate_ssh_key: yes
+    append: yes
+    groups:
+      # - docker
+      - sudo
+  with_items:
+    - "{{ users.keys() }}"

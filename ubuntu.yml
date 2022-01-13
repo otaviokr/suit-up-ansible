@@ -1,7 +1,7 @@
 ---
 
 - hosts: all
-  remote_user: otaviokr
+  remote_user: vagrant
   become: yes
   roles:
     - ubuntu

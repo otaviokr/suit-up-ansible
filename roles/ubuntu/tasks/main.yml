@@ -14,6 +14,10 @@
   apt:
     name: "{{ applications }}"
 
+- name: Create new users
+  include_role:
+    name: new-users
+
 - name: Install git
   include_role:
     name: git-install
@@ -31,18 +35,6 @@
 - name: Install Golang
   include_role:
     name: golang-install
-
-# - name: Creating user {{ login }}
-#   user:
-#     name: "{{ login }}"
-#     comment: "{{ username }}"
-#     # encrypted password: echo "yoursecretpassword" | openssl passwd -1 -stdin
-#     password: '{{ password }}'
-#     shell: /bin/zsh
-#     append: yes
-#     groups:
-#       - docker
-#       - sudo
 
 - name: Install fonts
   include_role:

@@ -22,15 +22,15 @@
     filter: ansible_local
 
 - name: Configure username in git
-  become_user: "{{ item }}"
-  shell: git config --global user.name "{{ logins[item].username }}"
+  # become_user: "{{ item }}"
+  shell: sudo -i -u {{ item }} git config --global user.name "{{ logins[item].username }}"
   with_items:
     - "{{ logins.keys() }}"
   when: "ansible_local['git']['users'][item].name != logins[item].username"
 
 - name: Configure email in git
-  become_user: "{{ item }}"
-  shell: git config --global user.email "{{ logins[item].email }}"
+  # become_user: "{{ item }}"
+  shell: sudo -i -u {{ item }} git config --global user.email "{{ logins[item].email }}"
   with_items:
     - "{{ logins.keys() }}"
   when: "ansible_local['git']['users'][item].email != logins[item].email"
