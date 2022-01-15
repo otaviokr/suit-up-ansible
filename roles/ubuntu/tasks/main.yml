@@ -32,6 +32,10 @@
   include_role:
     name: btop-install
 
+- name: Install dust
+  include_role:
+    name: dust-install
+
 - name: Install Golang
   include_role:
     name: golang-install

@@ -1,0 +1,34 @@
+---
+
+# - name: Checking existing dust version, if  any
+#   shell: "if [ ! -f $(which btop) ]; then echo ''; else btop -v | cut -d' ' -f3; fi"
+#   register: btop_v
+
+# - name: Current version of dust (before installing)
+#   debug:
+#     var: btop_v.stdout
+
+- name: Downloading dust
+  get_url:
+    url: https://github.com/bootandy/dust/releases/download/v{{ dust_version }}/dust-v{{ dust_version }}-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp/
+#  when: "btop_v.stdout != btop_version"
+
+- name: Creating temp folder
+  file:
+    path: /tmp/dust
+    state: directory
+  # when: "btop_v.stdout != btop_version"
+
+- name: Installing
+  become: yes
+  shell: cd /tmp/dust && tar zxf ../dust-v{{ dust_version }}-x86_64-unknown-linux-musl.tar.gz && sudo mv dust-v{{ dust_version }}-x86_64-unknown-linux-musl/dust /usr/local/bin/
+  # when: "btop_v.stdout != btop_version"
+
+- name: deleting temp folder and files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/tmp/dust"
+    - "/tmp/dust-v{{ dust_version }}-x86_64-unknown-linux-musl.tar.gz"
