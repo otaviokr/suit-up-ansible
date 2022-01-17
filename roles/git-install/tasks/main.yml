@@ -34,3 +34,73 @@
   with_items:
     - "{{ logins.keys() }}"
   when: "ansible_local['git']['users'][item].email != logins[item].email"
+
+- name: Configure diff-so-fancy in git
+  shell: sudo -i -u {{ item }} git config --global core.pager "diff-so-fancy | less --tabs=4 -RFX"
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.2)
+  shell: sudo -i -u {{ item }} git config --global interactive.diffFilter "diff-so-fancy --patch"
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.3)
+  shell: sudo -i -u {{ item }} git config --global color.ui true
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.4)
+  shell: sudo -i -u {{ item }} git config --global color.diff-highlight.oldNormal    "red bold"
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.5)
+  shell: sudo -i -u {{ item }} git config --global color.diff-highlight.oldHighlight "red bold 52"
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.6)
+  shell: sudo -i -u {{ item }} git config --global color.diff-highlight.newNormal    "green bold"
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.7)
+  shell: sudo -i -u {{ item }} git config --global color.diff-highlight.newHighlight "green bold 22"
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.8)
+  shell: sudo -i -u {{ item }} git config --global color.diff.meta       "11"
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.9)
+  shell: sudo -i -u {{ item }} git config --global color.diff.frag       "magenta bold"
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.10)
+  shell: sudo -i -u {{ item }} git config --global color.diff.func       "146 bold"
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.11)
+  shell: sudo -i -u {{ item }} git config --global color.diff.commit     "yellow bold"
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.12)
+  shell: sudo -i -u {{ item }} git config --global color.diff.old        "red bold"
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.13)
+  shell: sudo -i -u {{ item }} git config --global color.diff.new        "green bold"
+  with_items:
+    - "{{ logins.keys() }}"
+
+- name: Configure diff-so-fancy in git (pt.14)
+  shell: sudo -i -u {{ item }} git config --global color.diff.whitespace "red reverse"
+  with_items:
+    - "{{ logins.keys() }}"
