@@ -10,13 +10,17 @@
   apt_repository:
     repo: ppa:ansible/ansible
 
+- name: Add diff-so-fancy repo
+  apt_repository:
+    repo: ppa:aos1/diff-so-fancy
+
 - name: Install packages
   apt:
     name: "{{ applications }}"
 
-- name: Create new users
-  include_role:
-    name: new-users
+# - name: Create new users
+#   include_role:
+#     name: new-users
 
 - name: Install git
   include_role:
