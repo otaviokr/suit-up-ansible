@@ -14,13 +14,26 @@
   apt_repository:
     repo: ppa:aos1/diff-so-fancy
 
-- name: Install packages
+- name: Install generic packages
   apt:
-    name: "{{ applications }}"
+    name: "{{ generic.applications }}"
 
-# - name: Create new users
-#   include_role:
-#     name: new-users
+- name: Install specific packages
+  apt:
+    name: "{{ ubuntu.applications }}"
+
+- name: Check if user already exists
+  shell: id otaviokr || echo nok
+  register: user_exists
+
+- name: output from check
+  debug:
+    var: user_exists
+
+- name: Create new users
+  include_role:
+    name: new-users
+  when: "user_exists.stdout == 'nok'"
 
 - name: Install git
   include_role:
