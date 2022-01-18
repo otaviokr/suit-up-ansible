@@ -15,3 +15,36 @@ golang_version: 1.17.5
 
 # Timezone configuration.
 timezone: Europe/Zurich
+
+generic:
+  applications:
+    - ansible
+    - automake
+    - awesome
+    - bat
+    - cmake
+    - cmatrix
+    - curl
+    - diff-so-fancy
+    - ffmpeg
+    - findutils
+    - fzf
+    - gettext
+    - grep
+    - gzip
+    - libtool
+    - lvm2
+    - mokutil
+    - neofetch
+    - neovim
+    - nitrogen
+    - os-prober
+    - pciutils
+    - pkg-config
+    - podman
+    - python3
+    - sshpass
+    - usbutils
+    - vagrant
+    - wget
+    - zsh

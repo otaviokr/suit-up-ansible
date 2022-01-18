@@ -24,3 +24,33 @@ login: otaviokr
 # password:
 
 timezone: Europe/Zurich
+
+ubuntu:
+  applications:
+    - apt-transport-https
+    - awesome-extra
+    - build-essential
+    - fonts-indic
+    - fonts-powerline
+    - hostname
+    - hunspell-en-us
+    - init
+    - keyboard-configuration
+    - libaio1
+    - libdevmapper-event1.02.1
+    - libegl1-mesa-dev
+    - libfontconfig1-dev
+    - libfreetype6-dev
+    - libtool-bin
+    - libxcb-xfixes0-dev
+    - locales
+    - ncurses-base
+    - ncurses-bin
+    - ncurses-term
+    - openssh-server
+    - python3-apt
+    - software-properties-common
+    - uim
+    - wamerican
+    - wbritish
+    - xauth
