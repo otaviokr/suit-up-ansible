@@ -1,0 +1,62 @@
+---
+
+- name: Update all packages to their latest version
+  packman:
+    name: "*"
+    state: latest
+    update_cache: yes
+
+- name: Install generic packages
+  apt:
+    name: "{{ generic.applications }}"
+
+- name: Install specific packages
+  apt:
+    name: "{{ archlinux.applications }}"
+
+- name: Check if user already exists
+  shell: id otaviokr || echo nok
+  register: user_exists
+
+- name: output from check
+  debug:
+    var: user_exists
+
+- name: Create new users
+  include_role:
+    name: new-users
+  when: "user_exists.stdout == 'nok'"
+
+- name: Install git
+  include_role:
+    name: git-install
+  vars:
+    logins: "{{ users }}"
+
+- name: Install virtualbox
+  include_role:
+    name: virtualbox-install
+
+- name: Install btop
+  include_role:
+    name: btop-install
+
+- name: Install dust
+  include_role:
+    name: dust-install
+
+- name: Install Golang
+  include_role:
+    name: golang-install
+
+- name: Install fonts
+  include_role:
+    name: fonts-install
+
+- name: Install Oh-My-ZSH
+  include_role:
+    name: oh-my-zsh-install
+
+- name: Install neovim
+  include_role:
+    name: neovim-install
