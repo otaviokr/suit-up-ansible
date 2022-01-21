@@ -30,6 +30,8 @@ ubuntu:
     - apt-transport-https
     - awesome-extra
     - build-essential
+    - bridge-utils
+    - cpu-checker
     - fonts-indic
     - fonts-powerline
     - hostname
@@ -42,6 +44,8 @@ ubuntu:
     - libfontconfig1-dev
     - libfreetype6-dev
     - libtool-bin
+    - libvirt-clients
+    - libvirt-daemon
     - libxcb-xfixes0-dev
     - locales
     - ncurses-base
@@ -49,8 +53,11 @@ ubuntu:
     - ncurses-term
     - openssh-server
     - python3-apt
+    - qemu
+    - qemu-kvm
     - software-properties-common
     - uim
+    - virt-manager
     - wamerican
     - wbritish
     - xauth

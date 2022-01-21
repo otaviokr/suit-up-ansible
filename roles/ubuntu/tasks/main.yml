@@ -45,6 +45,12 @@
   include_role:
     name: virtualbox-install
 
+# - name: Install vagrant plugin for kvm
+#   become: {{ item }}
+#   shell: vagrant plugin install vagrant-kvm
+#   with_items:
+#     - "{{ user }}"
+
 - name: Install btop
   include_role:
     name: btop-install
